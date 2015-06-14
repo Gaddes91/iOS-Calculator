@@ -37,16 +37,6 @@ class ViewController: UIViewController
             display.text = digit
             userIsInTheMiddleOfTypingANumber = true
         }
-        
-//        // Check for existence of a decimal point. If one already exists, do not allow user to enter another
-//        if display.text?.rangeOfString(".") != nil {
-//            // Allow user to enter whatever they like, including decimal points
-//        } else {
-//            // Prevent user from entering a second decimal point
-//            
-//        }
-        
-
     }
     
     @IBAction func operate(sender: UIButton) {
@@ -62,6 +52,10 @@ class ViewController: UIViewController
         case "+": performOperation { $0 + $1 }
         case "−": performOperation { $1 - $0 }
         case "√": performOperation { sqrt($0) }
+        // sin/cos functions accept a value in radians. This calculator will work with degrees, so we must convert user input (degrees) to radians.
+        // Radians = Degrees * (PI / 180)
+        case "sin": performOperation { sin($0 * (M_PI / 180)) }
+        case "cos": performOperation { cos($0 * (M_PI / 180)) }
         default: break
         }
     }
