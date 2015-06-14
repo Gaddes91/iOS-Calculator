@@ -18,13 +18,35 @@ class ViewController: UIViewController
         // Declare a constant "digit" and specify its value as the title of the current sender. For this application, the current sender will be 1, 2, 3, 4, 5... etc.
         let digit = sender.currentTitle!
         if userIsInTheMiddleOfTypingANumber {
-            // Append the value of "digit" (as string) to current display.text
-            display.text = display.text! + digit
+            
+            // Check whether current display contains decimal point
+            if display.text?.rangeOfString(".") != nil {
+                // If current display contains decimal point, then check whether the current digit entered by user contains decimal point
+                if digit == "." {
+                    // Nothing happens - a second decimal point will NOT be appended to display
+                } else {
+                    // If current display does not contain a decimal point, allow user to enter whatever they like, including decimal points
+                    display.text = display.text! + digit
+                }
+            } else {
+                // Append the value of "digit" (as string) to current display.text
+                display.text = display.text! + digit
+            }
+            
         } else {
             display.text = digit
             userIsInTheMiddleOfTypingANumber = true
         }
         
+//        // Check for existence of a decimal point. If one already exists, do not allow user to enter another
+//        if display.text?.rangeOfString(".") != nil {
+//            // Allow user to enter whatever they like, including decimal points
+//        } else {
+//            // Prevent user from entering a second decimal point
+//            
+//        }
+        
+
     }
     
     @IBAction func operate(sender: UIButton) {
