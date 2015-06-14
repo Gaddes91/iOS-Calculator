@@ -32,10 +32,25 @@ class ViewController: UIViewController
                 // Append the value of "digit" (as string) to current display.text
                 display.text = display.text! + digit
             }
-            
         } else {
             display.text = digit
             userIsInTheMiddleOfTypingANumber = true
+        }
+    }
+    
+    @IBAction func appendSpecial(sender: UIButton) {
+        
+        var specialDigit = sender.currentTitle!
+        
+        if userIsInTheMiddleOfTypingANumber {
+            // Do nothing
+        } else {
+            // The switch function allows for the easy addition of special values, if necessary
+            switch specialDigit {
+            case "π": display.text = "\(M_PI)"
+            default: break
+            }
+            enter()
         }
     }
     
