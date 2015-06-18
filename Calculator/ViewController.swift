@@ -11,6 +11,7 @@ import UIKit
 class ViewController: UIViewController
 {
     @IBOutlet weak var display: UILabel!
+    @IBOutlet weak var displayHistory: UILabel!
 
     var userIsInTheMiddleOfTypingANumber = false
     
@@ -41,6 +42,7 @@ class ViewController: UIViewController
     @IBAction func appendSpecial(sender: UIButton) {
         
         var specialDigit = sender.currentTitle!
+        displayHistory.text = displayHistory.text! + specialDigit
         
         if userIsInTheMiddleOfTypingANumber {
             // Do nothing
@@ -55,7 +57,27 @@ class ViewController: UIViewController
     }
     
     @IBAction func operate(sender: UIButton) {
+
+        // Update displayHistory to reflect the history of operands together with the operations performed upon them
+        
+        // String value of the current operator
         let operation = sender.currentTitle!
+
+        // Check whether displayHistory is blank
+        if displayHistory.text!.isEmpty {
+            /* If displayHistory is empty then two operands must be added to the displayHistory (both the operand before and the operand after the operator symbol itself).
+             * To access the operand before the operator, we must take the first value from the operandStack (operandStack[0]).
+             * To access the operand after, we simply use displayValue.description.
+             * We update displayHistory by inserting this string at the correct position (at the end of displayHistory), using atIndex: displayHistory.text!.endIndex
+             * N.B. Xcode suggested use of stringInterpolationSegment - I do not fully understand what this does
+             */
+            displayHistory.text?.splice((String(stringInterpolationSegment: operandStack[0]) + operation + displayValue.description), atIndex: displayHistory.text!.endIndex)
+        } else {
+            // If displayHistory is not empty then our job is easier - we only have to add the operator symbol and the latest value (displayValue.description)
+            displayHistory.text?.splice(operation + displayValue.description, atIndex: displayHistory.text!.endIndex)
+        }
+        
+        
         // Ensure that using an operator will have the same effect as pressing "enter"
         if userIsInTheMiddleOfTypingANumber {
             enter()
