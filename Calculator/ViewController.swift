@@ -71,7 +71,14 @@ class ViewController: UIViewController
              * We update displayHistory by inserting this string at the correct position (at the end of displayHistory), using atIndex: displayHistory.text!.endIndex
              * N.B. Xcode suggested use of stringInterpolationSegment - I do not fully understand what this does
              */
-            displayHistory.text?.splice((String(stringInterpolationSegment: operandStack[0]) + operation + displayValue.description), atIndex: displayHistory.text!.endIndex)
+            
+            /* This additional "if" statement confirms that operandStack is not empty before proceeding.
+             * If the operation is performed whilst the operandStack is empty, the program will crash.
+             */
+            if operandStack != [] {
+                displayHistory.text?.splice((String(stringInterpolationSegment: operandStack[0]) + operation + displayValue.description), atIndex: displayHistory.text!.endIndex)
+            }
+            
         } else {
             // If displayHistory is not empty then our job is easier - we only have to add the operator symbol and the latest value (displayValue.description)
             displayHistory.text?.splice(operation + displayValue.description, atIndex: displayHistory.text!.endIndex)
@@ -113,6 +120,21 @@ class ViewController: UIViewController
             displayValue = operation(operandStack.removeLast())
             enter()
         }
+    }
+    
+    // Function to clear all values when "Clear All" button is clicked
+    @IBAction func ClearAll(sender: UIButton) {
+        // Clear operandStack
+        operandStack = []
+
+        // Clear display
+        display.text = ""
+        
+        // Clear displayHistory
+        displayHistory.text = ""
+        
+        // Reset userIsInTheMiddleOfTypingANumber
+        userIsInTheMiddleOfTypingANumber = false
     }
     
     // Array to hold the "stack" of numbers entered by the user
