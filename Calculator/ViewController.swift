@@ -15,6 +15,9 @@ class ViewController: UIViewController
 
     var userIsInTheMiddleOfTypingANumber = false
     
+    // This is the "green arrow" that goes from the controller to the model
+    var brain = CalculatorBrain()
+    
     @IBAction func appendDigit(sender: UIButton) {
         // Declare a constant "digit" and specify its value as the title of the current sender. For this application, the current sender will be 1, 2, 3, 4, 5... etc.
         let digit = sender.currentTitle!
@@ -58,50 +61,63 @@ class ViewController: UIViewController
     
     @IBAction func operate(sender: UIButton) {
 
-        // Update displayHistory to reflect the history of operands together with the operations performed upon them
-        
-        // String value of the current operator
-        let operation = sender.currentTitle!
-
-        // Check whether displayHistory is blank
-        if displayHistory.text!.isEmpty {
-            /* If displayHistory is empty then two operands must be added to the displayHistory (both the operand before and the operand after the operator symbol itself).
-             * To access the operand before the operator, we must take the first value from the operandStack (operandStack[0]).
-             * To access the operand after, we simply use displayValue.description.
-             * We update displayHistory by inserting this string at the correct position (at the end of displayHistory), using atIndex: displayHistory.text!.endIndex
-             * N.B. Xcode suggested use of stringInterpolationSegment - I do not fully understand what this does
-             */
-            
-            /* This additional "if" statement confirms that operandStack is not empty before proceeding.
-             * If the operation is performed whilst the operandStack is empty, the program will crash.
-             */
-            if operandStack != [] {
-                displayHistory.text?.splice((String(stringInterpolationSegment: operandStack[0]) + operation + displayValue.description), atIndex: displayHistory.text!.endIndex)
-            }
-            
-        } else {
-            // If displayHistory is not empty then our job is easier - we only have to add the operator symbol and the latest value (displayValue.description)
-            displayHistory.text?.splice(operation + displayValue.description, atIndex: displayHistory.text!.endIndex)
-        }
-        
-        
-        // Ensure that using an operator will have the same effect as pressing "enter"
         if userIsInTheMiddleOfTypingANumber {
             enter()
         }
-        switch operation {
-        // "$0" is the first number passed to the function, whereas "$1" is the second
-        case "×": performOperation { $0 * $1 }
-        case "÷": performOperation { $1 / $0 }
-        case "+": performOperation { $0 + $1 }
-        case "−": performOperation { $1 - $0 }
-        case "√": performOperation { sqrt($0) }
-        // sin/cos functions accept a value in radians. This calculator will work with degrees, so we must convert user input (degrees) to radians.
-        // Radians = Degrees * (PI / 180)
-        case "sin": performOperation { sin($0 * (M_PI / 180)) }
-        case "cos": performOperation { cos($0 * (M_PI / 180)) }
-        default: break
+        
+        if let operation = sender.currentTitle {
+            if let result = brain.performOperation(operation) {
+                displayValue = result
+            } else {
+                displayValue = 0
+            }
         }
+        
+        
+//         //Update displayHistory to reflect the history of operands together with the operations performed upon them
+//        
+//        // String value of the current operator
+//        let operation = sender.currentTitle!
+//
+//        // Check whether displayHistory is blank
+//        if displayHistory.text!.isEmpty {
+//            /* If displayHistory is empty then two operands must be added to the displayHistory (both the operand before and the operand after the operator symbol itself).
+//             * To access the operand before the operator, we must take the first value from the operandStack (operandStack[0]).
+//             * To access the operand after, we simply use displayValue.description.
+//             * We update displayHistory by inserting this string at the correct position (at the end of displayHistory), using atIndex: displayHistory.text!.endIndex
+//             * N.B. Xcode suggested use of stringInterpolationSegment - I do not fully understand what this does
+//             */
+//            
+//            /* This additional "if" statement confirms that operandStack is not empty before proceeding.
+//             * If the operation is performed whilst the operandStack is empty, the program will crash.
+//             */
+//            if operandStack != [] {
+//                displayHistory.text?.splice((String(stringInterpolationSegment: operandStack[0]) + operation + displayValue.description), atIndex: displayHistory.text!.endIndex)
+//            }
+//            
+//        } else {
+//            // If displayHistory is not empty then our job is easier - we only have to add the operator symbol and the latest value (displayValue.description)
+//            displayHistory.text?.splice(operation + displayValue.description, atIndex: displayHistory.text!.endIndex)
+//        }
+//        
+//        
+//        // Ensure that using an operator will have the same effect as pressing "enter"
+//        if userIsInTheMiddleOfTypingANumber {
+//            enter()
+//        }
+//        switch operation {
+//        // "$0" is the first number passed to the function, whereas "$1" is the second
+//        case "×": performOperation { $0 * $1 }
+//        case "÷": performOperation { $1 / $0 }
+//        case "+": performOperation { $0 + $1 }
+//        case "−": performOperation { $1 - $0 }
+//        case "√": performOperation { sqrt($0) }
+//        // sin/cos functions accept a value in radians. This calculator will work with degrees, so we must convert user input (degrees) to radians.
+//        // Radians = Degrees * (PI / 180)
+//        case "sin": performOperation { sin($0 * (M_PI / 180)) }
+//        case "cos": performOperation { cos($0 * (M_PI / 180)) }
+//        default: break
+//        }
     }
     
     // Function to perform whatever operation is specified by user (multiplication, etc..)
@@ -142,8 +158,18 @@ class ViewController: UIViewController
     
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
-        operandStack.append(displayValue)
-        println("operandStack = \(operandStack)")
+        
+        // Push operand on to the stack (CalculatorBrain.swift)
+        if let result = brain.pushOperand(displayValue) {
+            // If result is not nil, update displayValue with result
+            displayValue = result
+        } else {
+            displayValue = 0
+        }
+        
+        
+//        operandStack.append(displayValue)
+//        println("operandStack = \(operandStack)")
     }
     
     // We use "get" and "set" since we want this value to always be computed
