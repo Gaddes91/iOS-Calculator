@@ -13,7 +13,7 @@ class CalculatorBrain
     /* We have to state ": Printable" in order for the description variable below to work
      * Here we are stating that enum IMPLEMENTS whatever is in the Printable PROTOCOL
      */
-    private enum Op: Printable {
+    enum Op: Printable {
         case Operand(Double)
         case UnaryOperation(String, Double -> Double)
         case BinaryOperation(String, (Double, Double) -> Double)
@@ -37,7 +37,14 @@ class CalculatorBrain
     }
     
     // This array will hold all our "Ops" (both operations and operands)
-    private var opStack = [Op]()
+    var opStack = [Op]()
+    
+    // Used within func updateDisplayHistory - This array holds operands only
+    var opStackOperand = [Op]()
+    
+    // Used within func updateDisplayHistory - This array holds operations only
+    var opStackOperation = [Op]()
+    
     
     /* This instance variable is required for use with performOperation()
      * It holds keys of type String and values of type Op
@@ -48,11 +55,13 @@ class CalculatorBrain
     init() {
         // Add knownOps to the knownOps dictionary
         knownOps["×"] = Op.BinaryOperation("×", *)
-        // We cannot simplify divide or minus any further, since these functions accept arguments in reverse order
+        // "$0" is the first number passed to the function, whereas "$1" is the second
         knownOps["÷"] = Op.BinaryOperation("÷") { $1 / $0 }
         knownOps["+"] = Op.BinaryOperation("+", +)
+        // We cannot simplify divide or minus any further, since these functions accept arguments in reverse order
         knownOps["−"] = Op.BinaryOperation("−") { $1 - $0 }
         knownOps["√"] = Op.UnaryOperation("√", sqrt)
+        // sin/cos functions accept a value in radians. This calculator will work with degrees, so we must convert user input (degrees) to radians.
         knownOps["sin"] = Op.UnaryOperation("sin") { sin($0 * (M_PI / 180)) }
         knownOps["cos"] = Op.UnaryOperation("cos") { cos($0 * (M_PI / 180)) }
     }
@@ -62,7 +71,7 @@ class CalculatorBrain
      * To do this, we use tuples.
      * N.B. in front of "ops: [Op]" there is an implicit "let", i.e. ops is read-only!
      */
-    private func evaluate(ops: [Op]) -> (result: Double?, remainingOps: [Op]) {
+    func evaluate(ops: [Op]) -> (result: Double?, remainingOps: [Op]) {
         
         // Check that ops is not empty
         if !ops.isEmpty {
@@ -121,6 +130,9 @@ class CalculatorBrain
     func pushOperand(operand: Double) -> Double? {
         opStack.append(Op.Operand(operand))
         
+        // Append operand to the "operand-only" array
+        opStackOperand.append(Op.Operand(operand))
+        
         // Every time we push an operand this will return the evaluation
         return evaluate()
     }
@@ -133,7 +145,40 @@ class CalculatorBrain
          */
         if let operation = knownOps[symbol] {
             opStack.append(operation)
+            
+            // Append operation to the "operation-only" array
+            opStackOperation.append(operation)
         }
         return evaluate()
+    }
+    
+    // Must be defined outside of the following function to prevent the displayHistory from resetting to "" each time the function is called
+    var displayHistory = ""
+    
+    // Update display history to reflect the history of operands together with the operations performed upon them
+    func updateDisplayHistory() -> String {
+        
+        /* This "if" statement confirms that opStackOperand is not empty before proceeding.
+        * If the operation is performed whilst the opStackOperand is empty, the program will crash.
+        */
+        if !opStackOperand.isEmpty {
+            
+            /* If displayHistory is empty then two operands must be added to the displayHistory (both the operand before and the operand after the operator symbol itself)
+            * To access the operand before the operator, we must take the penultimate value from the operand-only stack (opStackOperand.removeAtIndex(opStackOperand.count - 2))
+            * To access the operand after, we simply use opStackOperand.removeLast()
+            * We update displayHistory by appending each op, as a string, to the end of the existing displayHistory (displayHistory += "\(...)")
+            */
+            if displayHistory.isEmpty {
+                // Append the operand before the operation, the operation itself and, finally, the second operand
+                displayHistory += "\(opStackOperand.removeAtIndex(opStackOperand.count - 2))"
+                displayHistory += "\(opStackOperation.removeLast())"
+                displayHistory += "\(opStackOperand.removeLast())"
+            } else {
+                // If displayHistory is not empty then our job is easier - we only have to add the operation symbol and the latest operand
+                displayHistory += "\(opStackOperation.removeLast())"
+                displayHistory += "\(opStackOperand.removeLast())"
+            }
+        }
+        return displayHistory
     }
 }
