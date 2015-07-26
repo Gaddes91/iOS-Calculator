@@ -110,6 +110,8 @@ class ViewController: UIViewController
         userIsInTheMiddleOfTypingANumber = false
         
         brain.opStack = []
+        brain.opStackOperand = []
+        brain.opStackOperation = []
         brain.displayHistory = ""
     }
     
