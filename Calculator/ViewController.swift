@@ -144,7 +144,7 @@ class ViewController: UIViewController
             if let value = newValue {
                 display.text = "\(value)"
             } else {
-                display.text = " "
+                display.text = ""
             }
             userIsInTheMiddleOfTypingANumber = false
         }
