@@ -122,25 +122,30 @@ class ViewController: UIViewController
         userIsInTheMiddleOfTypingANumber = false
         
         // Push operand on to the stack (CalculatorBrain.swift)
-        if let result = brain.pushOperand(displayValue) {
+        if let result = brain.pushOperand(displayValue!) {
             // If result is not nil, update displayValue with result
             displayValue = result
             
         } else {
-            displayValue = 0
+            displayValue = nil
         }
     }
     
     // We use "get" and "set" since we want this value to always be computed
-    var displayValue: Double {
+    var displayValue: Double? {
         get {
             // Figure out what goes on here for an "extra credit"
-            return NSNumberFormatter().numberFromString(display.text!)!.doubleValue
+            return NSNumberFormatter().numberFromString(display.text!)?.doubleValue
         }
         set {
-            // Convert newValue to a string
-            // newValue is a variable (built-in to Swift) that takes the last value inputted by the user
-            display.text = "\(newValue)"
+            /* Use "if let" to check that newValue is not nil. If newValue is nil, display.text will show a blank space
+             * newValue is a variable (built-in to Swift) that takes the last value inputted by the user
+             */
+            if let value = newValue {
+                display.text = "\(value)"
+            } else {
+                display.text = " "
+            }
             userIsInTheMiddleOfTypingANumber = false
         }
     }
