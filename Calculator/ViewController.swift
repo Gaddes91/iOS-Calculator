@@ -74,7 +74,7 @@ class ViewController: UIViewController
         }
         
         // Update displayHistory each time an operation is performed
-//        displayHistory.text = brain.updateDisplayHistory()
+        displayHistory.text = brain.updateDisplayHistory()
     }
     
     // Function to perform whatever operation is specified by user (multiplication, etc..)
@@ -112,7 +112,7 @@ class ViewController: UIViewController
         brain.opStack = []
         brain.opStackOperand = []
         brain.opStackOperation = []
-//        brain.displayHistory = ""
+        brain.displayHistory = ""
     }
     
     // Array to hold the "stack" of numbers entered by the user

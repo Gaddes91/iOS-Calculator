@@ -14,7 +14,6 @@ class CalculatorBrain
      * Here we are stating that enum IMPLEMENTS whatever is in the Printable PROTOCOL
      */
     enum Op: Printable {
-        case NullaryOperation(String, () -> Double)
         case Operand(Double)
         case UnaryOperation(String, Double -> Double)
         case BinaryOperation(String, (Double, Double) -> Double)
@@ -27,8 +26,6 @@ class CalculatorBrain
                 switch self {
                 case .Operand(let operand):
                     return "\(operand)"
-                case .NullaryOperation(let symbol, _):
-                    return symbol
                 case .UnaryOperation(let symbol, _):
                     return symbol
                 case .BinaryOperation(let symbol, _):
@@ -54,55 +51,18 @@ class CalculatorBrain
     private var knownOps = [String: Op]()
     
     // Initialiser to be called when CalculatorBrain is first used (N.B. init has no arguments)
-//    init() {
-//        // Add knownOps to the knownOps dictionary
-//        knownOps["×"] = Op.BinaryOperation("×", *)
-//        // "$0" is the first number passed to the function, whereas "$1" is the second
-//        knownOps["÷"] = Op.BinaryOperation("÷") { $1 / $0 }
-//        knownOps["+"] = Op.BinaryOperation("+", +)
-//        // We cannot simplify divide or minus any further, since these functions accept arguments in reverse order
-//        knownOps["−"] = Op.BinaryOperation("−") { $1 - $0 }
-//        knownOps["√"] = Op.UnaryOperation("√", sqrt)
-//        // sin/cos functions accept a value in radians. This calculator will work with degrees, so we must convert user input (degrees) to radians.
-//        knownOps["sin"] = Op.UnaryOperation("sin") { sin($0 * (M_PI / 180)) }
-//        knownOps["cos"] = Op.UnaryOperation("cos") { cos($0 * (M_PI / 180)) }
-//    }
-    
     init() {
-        func learnOp (op: Op) {
-            knownOps[op.description] = op
-        }
-        learnOp(Op.BinaryOperation("x", *))
-        learnOp(Op.BinaryOperation("÷", { $1 / $0 }))
-        learnOp(Op.BinaryOperation("+", +))
-        learnOp(Op.BinaryOperation("−", { $1 - $0 }))
-        learnOp(Op.UnaryOperation("√", sqrt))
-        learnOp(Op.UnaryOperation("sin", sin))
-        learnOp(Op.UnaryOperation("cos", cos))
-        learnOp(Op.UnaryOperation("±", { -$0 }))
-        learnOp(Op.NullaryOperation("π", { M_PI }))
-    }
-    
-    
-    typealias PropertyList = AnyObject
-    var program: PropertyList { // guaranteed to be a property list
-        get {
-            return opStack.map{ $0.description }
-        }
-        set {
-            if let opSymbols = newValue as? Array<String> {
-                var newOpStack = [Op]()
-                let numberFormatter = NSNumberFormatter()
-                for opSymbol in opSymbols {
-                    if let op = knownOps[opSymbol] {
-                        newOpStack.append(op)
-                    } else if let operand = numberFormatter.numberFromString(opSymbol)?.doubleValue {
-                        newOpStack.append(.Operand(operand))
-                    }
-                }
-                opStack = newOpStack
-            }
-        }
+        // Add knownOps to the knownOps dictionary
+        knownOps["×"] = Op.BinaryOperation("×", *)
+        // "$0" is the first number passed to the function, whereas "$1" is the second
+        knownOps["÷"] = Op.BinaryOperation("÷") { $1 / $0 }
+        knownOps["+"] = Op.BinaryOperation("+", +)
+        // We cannot simplify divide or minus any further, since these functions accept arguments in reverse order
+        knownOps["−"] = Op.BinaryOperation("−") { $1 - $0 }
+        knownOps["√"] = Op.UnaryOperation("√", sqrt)
+        // sin/cos functions accept a value in radians. This calculator will work with degrees, so we must convert user input (degrees) to radians.
+        knownOps["sin"] = Op.UnaryOperation("sin") { sin($0 * (M_PI / 180)) }
+        knownOps["cos"] = Op.UnaryOperation("cos") { cos($0 * (M_PI / 180)) }
     }
     
     /* The first time we call evaluate we want the whole stack.
@@ -128,8 +88,6 @@ class CalculatorBrain
             case .Operand(let operand):
                 // We want to return both the operand value and the remaining ops
                 return (operand, remainingOps)
-            case .NullaryOperation(_, let operation):
-                return (operation(), remainingOps)
             case .UnaryOperation(_, let operation):
                 
                 /* This is where recursion comes into play
@@ -157,18 +115,13 @@ class CalculatorBrain
         return (nil, ops)
     }
     
-    func showStack() -> String? {
-        return " ".join(opStack.map{ "\($0)" })
-    }
-    
-    
     func evaluate() -> Double? {
         
         /* This is a different way to call a function that returns a tuple.
          * We let a tuple equal the result (the result is assigned to a tuple), rather than assigning it to a single variable and using dot notation to access each individual value.
          */
         let (result, remainder) = evaluate(opStack)
-//        println("\(opStack) = \(result) with \(remainder) left over")
+        println("\(opStack) = \(result) with \(remainder) left over")
         return result
     }
     
@@ -183,19 +136,6 @@ class CalculatorBrain
         return evaluate()
     }
     
-//    // Required Task 5 - Let users set the value for any variable they wish (e.g. brain.variableValues[“x”] = 35.0)
-//    var variableValues: Dictionary<String,Double>
-//    
-//    // Required Task 5 - Allow the pushing of variables on to the internal stack of CalculatorBrain
-//    func pushOperand(symbol: String) -> Double? {
-//        
-//
-//        
-////        opStack.append(<#newElement: T#>)
-//        
-//        return evaluate()
-//    }
-    
     // Push operation symbol on to opStack
     func performOperation(symbol: String) -> Double? {
         /* The constant "operation" is of type optional Op, since we may be looking up something that is not in the array knownOps
@@ -205,39 +145,39 @@ class CalculatorBrain
         if let operation = knownOps[symbol] {
             opStack.append(operation)
             
-//            // Append operation to the "operation-only" array
-//            opStackOperation.append(operation)
+            // Append operation to the "operation-only" array
+            opStackOperation.append(operation)
         }
         return evaluate()
     }
     
-//    // Must be defined outside of the following function to prevent the displayHistory from resetting to "" each time the function is called
-//    var displayHistory = ""
-//    
-//    // Update display history to reflect the history of operands together with the operations performed upon them
-//    func updateDisplayHistory() -> String {
-//        
-//        /* This "if" statement confirms that opStackOperand is not empty before proceeding.
-//        * If the operation is performed whilst the opStackOperand is empty, the program will crash.
-//        */
-//        if !opStackOperand.isEmpty {
-//            
-//            /* If displayHistory is empty then two operands must be added to the displayHistory (both the operand before and the operand after the operator symbol itself)
-//            * To access the operand before the operator, we must take the penultimate value from the operand-only stack (opStackOperand.removeAtIndex(opStackOperand.count - 2))
-//            * To access the operand after, we simply use opStackOperand.removeLast()
-//            * We update displayHistory by appending each op, as a string, to the end of the existing displayHistory (displayHistory += "\(...)")
-//            */
-//            if displayHistory.isEmpty {
-//                // Append the operand before the operation, the operation itself and, finally, the second operand
-//                displayHistory += "\(opStackOperand.removeAtIndex(opStackOperand.count - 2))"
-//                displayHistory += "\(opStackOperation.removeLast())"
-//                displayHistory += "\(opStackOperand.removeLast())"
-//            } else {
-//                // If displayHistory is not empty then our job is easier - we only have to add the operation symbol and the latest operand
-//                displayHistory += "\(opStackOperation.removeLast())"
-//                displayHistory += "\(opStackOperand.removeLast())"
-//            }
-//        }
-//        return displayHistory
-//    }
+    // Must be defined outside of the following function to prevent the displayHistory from resetting to "" each time the function is called
+    var displayHistory = ""
+    
+    // Update display history to reflect the history of operands together with the operations performed upon them
+    func updateDisplayHistory() -> String {
+        
+        /* This "if" statement confirms that opStackOperand is not empty before proceeding.
+        * If the operation is performed whilst the opStackOperand is empty, the program will crash.
+        */
+        if !opStackOperand.isEmpty {
+            
+            /* If displayHistory is empty then two operands must be added to the displayHistory (both the operand before and the operand after the operator symbol itself)
+            * To access the operand before the operator, we must take the penultimate value from the operand-only stack (opStackOperand.removeAtIndex(opStackOperand.count - 2))
+            * To access the operand after, we simply use opStackOperand.removeLast()
+            * We update displayHistory by appending each op, as a string, to the end of the existing displayHistory (displayHistory += "\(...)")
+            */
+            if displayHistory.isEmpty {
+                // Append the operand before the operation, the operation itself and, finally, the second operand
+                displayHistory += "\(opStackOperand.removeAtIndex(opStackOperand.count - 2))"
+                displayHistory += "\(opStackOperation.removeLast())"
+                displayHistory += "\(opStackOperand.removeLast())"
+            } else {
+                // If displayHistory is not empty then our job is easier - we only have to add the operation symbol and the latest operand
+                displayHistory += "\(opStackOperation.removeLast())"
+                displayHistory += "\(opStackOperand.removeLast())"
+            }
+        }
+        return displayHistory
+    }
 }
