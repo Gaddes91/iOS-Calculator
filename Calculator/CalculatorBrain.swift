@@ -13,10 +13,11 @@ class CalculatorBrain
     /* We have to state ": Printable" in order for the description variable below to work
      * Here we are stating that enum IMPLEMENTS whatever is in the Printable PROTOCOL
      */
-    enum Op: Printable {
+    enum Op: CustomStringConvertible {
         case Operand(Double)
         case UnaryOperation(String, Double -> Double)
         case BinaryOperation(String, (Double, Double) -> Double)
+        case Constant(String, () -> Double)
         
         /* Add a computed property to this type.
          * Since we want this to be a read-only property, we use "get" but not "set"
@@ -29,6 +30,8 @@ class CalculatorBrain
                 case .UnaryOperation(let symbol, _):
                     return symbol
                 case .BinaryOperation(let symbol, _):
+                    return symbol
+                case .Constant(let symbol, _):
                     return symbol
                 }
             }
@@ -63,6 +66,7 @@ class CalculatorBrain
         // sin/cos functions accept a value in radians. This calculator will work with degrees, so we must convert user input (degrees) to radians.
         knownOps["sin"] = Op.UnaryOperation("sin") { sin($0 * (M_PI / 180)) }
         knownOps["cos"] = Op.UnaryOperation("cos") { cos($0 * (M_PI / 180)) }
+        knownOps["π"] = Op.Constant("π") { M_PI }
     }
     
     /* The first time we call evaluate we want the whole stack.
@@ -84,7 +88,7 @@ class CalculatorBrain
             switch op {
             // Swift is using type inference to know that we really mean "Op.Operand", or "Op.UnaryOperation", etc.
                 
-            // When we encounter an operand, we want to assign it to a new constand named "operand"
+            // When we encounter an operand, we want to assign it to a new constant named "operand"
             case .Operand(let operand):
                 // We want to return both the operand value and the remaining ops
                 return (operand, remainingOps)
@@ -109,6 +113,9 @@ class CalculatorBrain
                         return (operation(operand1, operand2), op2Evaluation.remainingOps)
                     }
                 }
+            case .Constant(_, let operation):
+                // Return a tuple containing the result of the function (as a Double) together with the remaining ops
+                return (operation(), remainingOps)
             }
         }
         // This will return nil if the evaluation fails
@@ -121,7 +128,7 @@ class CalculatorBrain
          * We let a tuple equal the result (the result is assigned to a tuple), rather than assigning it to a single variable and using dot notation to access each individual value.
          */
         let (result, remainder) = evaluate(opStack)
-        println("\(opStack) = \(result) with \(remainder) left over")
+        print("\(opStack) = \(result) with \(remainder) left over")
         return result
     }
     

@@ -44,7 +44,7 @@ class ViewController: UIViewController
     
     @IBAction func appendSpecial(sender: UIButton) {
         
-        var specialDigit = sender.currentTitle!
+        let specialDigit = sender.currentTitle!
         displayHistory.text = displayHistory.text! + specialDigit
         
         if userIsInTheMiddleOfTypingANumber {
